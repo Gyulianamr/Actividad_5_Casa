@@ -30,6 +30,32 @@ scaler = joblib.load("models/scaler.pkl")
 # =========================
 st.sidebar.header("⚙️ Configuración PCA")
 n_components = st.sidebar.slider("Componentes PCA (visualización)", 2, 50, 2)
+# =========================
+# PREDICCIÓN DE IMAGEN
+# =========================
+st.subheader("🔮 Predicción de dígito")
+
+uploaded = st.file_uploader("Sube una imagen", type=["png", "jpg", "jpeg"])
+
+if uploaded:
+
+    img = Image.open(uploaded).convert("L")
+    img = img.resize((28, 28))
+
+    img_array = np.array(img)
+
+    # 🔥 corregir estilo MNIST
+    img_array = 255 - img_array
+
+    st.image(img_array, caption="Imagen procesada", width=150)
+
+    img_array = img_array.reshape(1, -1) / 255.0
+    img_scaled = scaler.transform(img_array)
+    img_pca = pca.transform(img_scaled)
+
+    pred = svm.predict(img_pca)
+
+    st.success(f"🔮 Predicción: {pred[0]}")
 
 # =========================
 # VISUALIZACIÓN PCA 2D
@@ -72,32 +98,7 @@ try:
 except:
     st.warning("No se encontró metricas.csv. Ejecuta entrenamiento en Colab.")
 
-# =========================
-# PREDICCIÓN DE IMAGEN
-# =========================
-st.subheader("🔮 Predicción de dígito")
 
-uploaded = st.file_uploader("Sube una imagen", type=["png", "jpg", "jpeg"])
-
-if uploaded:
-
-    img = Image.open(uploaded).convert("L")
-    img = img.resize((28, 28))
-
-    img_array = np.array(img)
-
-    # 🔥 corregir estilo MNIST
-    img_array = 255 - img_array
-
-    st.image(img_array, caption="Imagen procesada", width=150)
-
-    img_array = img_array.reshape(1, -1) / 255.0
-    img_scaled = scaler.transform(img_array)
-    img_pca = pca.transform(img_scaled)
-
-    pred = svm.predict(img_pca)
-
-    st.success(f"🔮 Predicción: {pred[0]}")
 
 # =========================
 # FOOTER
